@@ -28,6 +28,10 @@ contract PhantasmManager is ERC721 {
 
     address private owner;
 
+    /* Set Constants here */
+    address private immutable DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+    address private immutable DInterestImpl = 0x6D97eA6e14D35e10b50df9475e9EFaAd1982065E; // ETH address, fix
+
     struct Position {
         bool    isLong;
         bool    isInsulated;
@@ -140,7 +144,7 @@ contract PhantasmManager is ERC721 {
         createdPosition.isInsulated = false;
         createdPosition.asset = _longToken;
         createdPosition.debtOwed = totalBorrow;
-        createdPosition.stablecoin = 0x6B175474E89094C44Da98b954EedeAC495271d0F; // DAI for now
+        createdPosition.stablecoin = DAI; // DAI for now
         createdPosition.totalCollateral = totalCollateral;
         createdPosition.lender = _lenderImplementation;
 
@@ -150,14 +154,14 @@ contract PhantasmManager is ERC721 {
     }
 
     function closeLongPosition(uint256 _tokenID, uint8 _swapImplementation, uint256 _interestAccured) public {
-            require(ownerOf(_tokenID) == msg.sender, "You have to own something to get it's value");
+            require(ownerOf(_tokenID) == msg.sender, "You have to own something to get its value");
             Position memory liquidateMe = viewPosition(_tokenID);
             //swap(address _tokenIn, address _tokenOut, uint _amountIn, uint _amountOutMin, address _to)
             // DAI to repay
             uint256 amountToRepay = _interestAccured + liquidateMe.debtOwed;
-            IERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F).transferFrom(msg.sender, address(this), amountToRepay);
-            IERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F).approve(lenderImplementations[liquidateMe.lender], amountToRepay);
-            lenderImplementation(lenderImplementations[liquidateMe.lender]).closePosition(0x6B175474E89094C44Da98b954EedeAC495271d0F, liquidateMe.asset, swapImplementations[_swapImplementation], amountToRepay, liquidateMe.totalCollateral);
+            IERC20(DAI).transferFrom(msg.sender, address(this), amountToRepay);
+            IERC20(DAI).approve(lenderImplementations[liquidateMe.lender], amountToRepay);
+            lenderImplementation(lenderImplementations[liquidateMe.lender]).closePosition(DAI, liquidateMe.asset, swapImplementations[_swapImplementation], amountToRepay, liquidateMe.totalCollateral);
 
     }
 
@@ -169,8 +173,8 @@ contract PhantasmManager is ERC721 {
         uint256 _assetAmount,
         uint256 _initialBorrow
         ) public returns (uint256) {
-            IERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F).transferFrom(msg.sender, address(this), _assetAmount);
-            IERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F).approve(lenderImplementations[_lenderImplementation], _assetAmount);
+            IERC20(DAI).transferFrom(msg.sender, address(this), _assetAmount);
+            IERC20(DAI).approve(lenderImplementations[_lenderImplementation], _assetAmount);
             (uint256 totalBorrow, uint256 totalCollateral) = lenderImplementation(lenderImplementations[_lenderImplementation]).leverageShort(_shortToken, swapImplementations[_swapImplementation], _assetAmount, _initialBorrow, _borrowFactor);
 
             Position memory createdPosition;
@@ -179,7 +183,7 @@ contract PhantasmManager is ERC721 {
             createdPosition.isInsulated = false;
             createdPosition.asset = _shortToken;
             createdPosition.debtOwed = totalBorrow;
-            createdPosition.stablecoin = 0x6B175474E89094C44Da98b954EedeAC495271d0F; // DAI for now
+            createdPosition.stablecoin = DAI; // DAI for now
             createdPosition.totalCollateral = totalCollateral;
             createdPosition.lender = _lenderImplementation;
 
@@ -195,7 +199,7 @@ contract PhantasmManager is ERC721 {
             uint256 amountToRepay = _interestAccured + liquidateMe.debtOwed;
             IERC20(liquidateMe.asset).transferFrom(msg.sender, address(this), amountToRepay);
             IERC20(liquidateMe.asset).approve(lenderImplementations[liquidateMe.lender], amountToRepay);
-            lenderImplementation(lenderImplementations[liquidateMe.lender]).closePosition(liquidateMe.asset, 0x6B175474E89094C44Da98b954EedeAC495271d0F, swapImplementations[_swapImplementation], amountToRepay, liquidateMe.totalCollateral);
+            lenderImplementation(lenderImplementations[liquidateMe.lender]).closePosition(liquidateMe.asset, DAI, swapImplementations[_swapImplementation], amountToRepay, liquidateMe.totalCollateral);
 
     }
 
@@ -220,10 +224,10 @@ contract PhantasmManager is ERC721 {
         // Just to see the functions its actually calling because this part is a bit of a mess
         IERC20(_longToken).transferFrom(msg.sender, address(this), _assetAmount);
 
-                // Insure against DAI you will be borrowing
-        IERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F).transferFrom(msg.sender,bondImplementations[0], stableFundAmount);      
+        // Insure against DAI you will be borrowing
+        IERC20(DAI).transferFrom(msg.sender,bondImplementations[0], stableFundAmount);      
 
-        bondImplementation(bondImplementations[0]).buyYieldTokens(0x6D97eA6e14D35e10b50df9475e9EFaAd1982065E, _depositId, stableFundAmount);
+        bondImplementation(bondImplementations[0]).buyYieldTokens(DInterestImpl, _depositId, stableFundAmount);
         
         IERC20(_longToken).approve(lenderImplementations[0], _assetAmount);
 
@@ -237,7 +241,7 @@ contract PhantasmManager is ERC721 {
         createdPosition.isInsulated = true;
         createdPosition.asset = _longToken;
         createdPosition.debtOwed = totalBorrow;
-        createdPosition.stablecoin = 0x6B175474E89094C44Da98b954EedeAC495271d0F; // DAI for now
+        createdPosition.stablecoin = DAI; // DAI for now
         createdPosition.totalCollateral = totalCollateral;
         createdPosition.lender = 0;
 
@@ -247,17 +251,17 @@ contract PhantasmManager is ERC721 {
     }
 
     function closeInsulatedLongPosition(uint256 _tokenID, uint8 _swapImplementation, uint64 _bondImplementation, uint256 _tipFee) public {
-            require(ownerOf(_tokenID) == msg.sender, "You have to own something to get it's value");
-            // _tipFee is just incase bond doesn't accure exactly the same and you need to give it a lil boost
-            Position memory liquidateMe = viewPosition(_tokenID);
-            require(liquidateMe.isInsulated);
-            IERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F).transferFrom(msg.sender, address(this), liquidateMe.debtOwed + _tipFee);
-            uint256 amountCollected = bondImplementation(bondImplementations[_bondImplementation]).collectAllInterest(liquidateMe.stablecoin);
-            //swap(address _tokenIn, address _tokenOut, uint _amountIn, uint _amountOutMin, address _to)
-            // DAI to repay
-            uint256 amountToRepay = amountCollected + liquidateMe.debtOwed + _tipFee;
-            IERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F).approve(lenderImplementations[liquidateMe.lender], amountToRepay);
-            lenderImplementation(lenderImplementations[liquidateMe.lender]).closePosition(0x6B175474E89094C44Da98b954EedeAC495271d0F, liquidateMe.asset, swapImplementations[_swapImplementation], amountToRepay, liquidateMe.totalCollateral);
+        require(ownerOf(_tokenID) == msg.sender, "You have to own something to get it's value");
+        // _tipFee is just incase bond doesn't accure exactly the same and you need to give it a lil boost
+        Position memory liquidateMe = viewPosition(_tokenID);
+        require(liquidateMe.isInsulated);
+        IERC20(DAI).transferFrom(msg.sender, address(this), liquidateMe.debtOwed + _tipFee);
+        uint256 amountCollected = bondImplementation(bondImplementations[_bondImplementation]).collectAllInterest(liquidateMe.stablecoin);
+        //swap(address _tokenIn, address _tokenOut, uint _amountIn, uint _amountOutMin, address _to)
+        // DAI to repay
+        uint256 amountToRepay = amountCollected + liquidateMe.debtOwed + _tipFee;
+        IERC20(DAI).approve(lenderImplementations[liquidateMe.lender], amountToRepay);
+        lenderImplementation(lenderImplementations[liquidateMe.lender]).closePosition(DAI, liquidateMe.asset, swapImplementations[_swapImplementation], amountToRepay, liquidateMe.totalCollateral);
     }
 
 
