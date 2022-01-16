@@ -2,9 +2,8 @@
 pragma solidity ^0.8;
 
 // Some interfaces are needed here
-import "./interfaces/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-
+import "./interfaces/IERC20.sol";
 
 interface lenderImplementation {
     function leverageLong(address _asset, address _swapper, uint256 _initialCollateralAmount, uint256 _initialBorrowAmount, uint256 _borrowFactor) external returns (uint256, uint256);

@@ -2,7 +2,7 @@
 pragma solidity ^0.8;
 
 
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import './interfaces/IERC20.sol';
 import './interfaces/IDInterest.sol';
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 contract EEIntegration is ERC1155Holder {
@@ -30,7 +30,7 @@ contract EEIntegration is ERC1155Holder {
                 if (daiPools[i].depositsLength() != 0) {
                     for (uint64 j = 1; j <= daiPools[i].depositsLength(); j++) {
                         if (daiPools[i].getDeposit(j).fundingID == 0 && amountLeft > 0) {
-                            (uint64 fundingID, uint256 fundingMultitokensMinted, uint256 actualFundAmount, uint256 principalFunded) = buyYieldTokens(address(daiPools[i]), j, amountLeft);
+                            (uint64 fundingID, , uint256 actualFundAmount, ) = buyYieldTokens(address(daiPools[i]), j, amountLeft);
                             amountLeft = amountLeft - actualFundAmount;
                             myFundingIDs[address(daiPools[i])][msg.sender].push(fundingID);
                         }

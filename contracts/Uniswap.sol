@@ -34,9 +34,9 @@ contract Uniswap {
         uint amountOutMin;
 
         if(_amountOutMin == 0){
-            uint amountOutMin = 1;
+            amountOutMin = 1;
         } else{
-            uint amountOutMin = _amountOutMin;
+            amountOutMin = _amountOutMin;
         }
         ISwapRouter.ExactInputParams memory params =
             ISwapRouter.ExactInputParams({

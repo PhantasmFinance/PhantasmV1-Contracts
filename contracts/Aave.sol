@@ -97,8 +97,8 @@ contract AaveImplementation {
     function withdraw(
         address _asset,
         uint256 _amount
-    ) internal returns (uint256){
-        uint256 amountReturned = aaveLender.withdraw(_asset, _amount, address(this));
+    ) internal returns (uint256 amountReturned){
+        amountReturned = aaveLender.withdraw(_asset, _amount, address(this));
     }
 
     function borrow(
