@@ -6,19 +6,19 @@ import './interfaces/ICompound.sol';
 import './interfaces/IUniswap.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
-contract Uniswap {
-    /*
-        █──█ █▀▀▄ ─▀─ █▀▀ █───█ █▀▀█ █▀▀█ 
-        █──█ █──█ ▀█▀ ▀▀█ █▄█▄█ █▄▄█ █──█ 
-        ─▀▀▀ ▀──▀ ▀▀▀ ▀▀▀ ─▀─▀─ ▀──▀ █▀▀▀
-    */
-    IUniswapV2Router public uniswap = IUniswapV2Router(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+contract SpookySwapper {
+
+
+    IUniswapV2Router public SpookyRouter = IUniswapV2Router(0xF491e7B69E4244ad4002BC14e878a34207E38c29);
     IERC20 public WETH = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 
-    function swap(address _tokenIn, address _tokenOut, uint _amountIn, uint _amountOutMin, address _to) public {
-        IERC20(_tokenIn).approve(address(uniswap), _amountIn);
+    function Swap(address _tokenIn, address _tokenOut, uint _amountIn, uint _amountOutMin, address _to) public {
+        IERC20(_tokenIn).approve(address(SpookyRouter), _amountIn);
 
         address[] memory path;
+        
+        // Quick logic routing as ETH is a common pairing
+        // @TODO add routing check for stablecoins like DAI as well
         if (_tokenIn == address(WETH) || _tokenOut == address(WETH)) {
             path = new address[](2);
             path[0] = _tokenIn;
@@ -30,7 +30,7 @@ contract Uniswap {
             path[2] = _tokenOut;
         }
 
-        uniswap.swapExactTokensForTokens(_amountIn, _amountOutMin, path, _to, block.timestamp);
+        SpookyRouter.swapExactTokensForTokens(_amountIn, _amountOutMin, path, _to, block.timestamp);
 
         IERC20(_tokenOut).transfer(msg.sender, IERC20(_tokenOut).balanceOf(address(this)));
     }
@@ -48,8 +48,7 @@ contract Uniswap {
             path[2] = _tokenOut;
         }
 
-        // same length as path
-        uint[] memory amountOutMins = uniswap.getAmountsOut(_amountIn, path);
+        uint[] memory amountOutMins = SpookyRouter.getAmountsOut(_amountIn, path);
 
         return amountOutMins[path.length - 1];
     }
